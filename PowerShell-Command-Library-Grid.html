@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerShell Command Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0d0d0d 100%);
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .theme-toggle {
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #888888;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .theme-toggle:hover {
+            background: #222222;
+            color: #aaaaaa;
+            border-color: #444444;
+        }
+
+        .theme-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .terminal-icon {
+            width: 48px;
+            height: 48px;
+            color: #888888;
+            filter: drop-shadow(0 0 10px #666666);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 42px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #cccccc 0%, #888888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            margin: 8px 0 0 0;
+            font-size: 14px;
+            color: #666666;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888888;
+            z-index: 1;
+            width: 20px;
+            height: 20px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            font-size: 16px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            color: #e0e0e0;
+            outline: none;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            border: 1px solid #555555;
+            box-shadow: 0 0 20px rgba(136, 136, 136, 0.2);
+        }
+
+        /* Grid Layout */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1200px) {
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .category {
+            background: #0d0d0d;
+            border-radius: 16px;
+            border: 1px solid #2a2a2a;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: fit-content;
+        }
+
+        .category.hidden {
+            display: none;
+        }
+
+        .category-header {
+            padding: 16px 20px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .category-header:hover {
+            background: #222222;
+        }
+
+        .category-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-icon {
+            font-size: 20px;
+        }
+
+        .category-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #aaaaaa;
+        }
+
+        .category-count {
+            background: #2a2a2a;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #888888;
+            font-weight: 600;
+        }
+
+        .chevron {
+            width: 20px;
+            height: 20px;
+            color: #555555;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded .chevron {
+            transform: rotate(90deg);
+            color: #888888;
+        }
+
+        .commands-container {
+            padding: 12px;
+            display: none;
+        }
+
+        .category.expanded .commands-container {
+            display: block;
+        }
+
+        .command {
+            margin-bottom: 12px;
+            background: #0a0a0a;
+            border-radius: 10px;
+            border: 1px solid #1f1f1f;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .command:last-child {
+            margin-bottom: 0;
+        }
+
+        .command.hidden {
+            display: none;
+        }
+
+        .command:hover {
+            border: 1px solid #3a3a3a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .command-content {
+            padding: 12px;
+        }
+
+        .command-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .command-info {
+            flex: 1;
+        }
+
+        .command-title {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: #cccccc;
+            font-weight: 600;
+        }
+
+        .command-description {
+            margin: 0;
+            font-size: 12px;
+            color: #666666;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .copy-button {
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #888888;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-left: 12px;
+            flex-shrink: 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .copy-button:hover {
+            background: #222222;
+            transform: scale(1.05);
+            color: #aaaaaa;
+        }
+
+        .copy-button.copied {
+            background: #2a2a2a;
+            border: 1px solid #444444;
+            color: #cccccc;
+        }
+
+        .copy-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .command-code {
+            margin: 0;
+            padding: 12px;
+            background: #000000;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #999999;
+            overflow: auto;
+            border: 1px solid #1a1a1a;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666666;
+        }
+
+        .no-results.hidden {
+            display: none;
+        }
+
+        .no-results-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 16px;
+            opacity: 0.5;
+        }
+
+        .no-results-title {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .no-results-subtitle {
+            font-size: 14px;
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+
+        .footer {
+            margin-top: 60px;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #2a2a2a;
+            color: #666666;
+            font-size: 13px;
+        }
+
+        .icon {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Light Mode Styles */
+        body.light-mode {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #f0f3f7 100%);
+            color: #2d3748;
+        }
+
+        body.light-mode .terminal-icon {
+            color: #4a5568;
+            filter: drop-shadow(0 0 10px rgba(74, 85, 104, 0.3));
+        }
+
+        body.light-mode h1 {
+            background: linear-gradient(90deg, #2d3748 0%, #4a5568 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.light-mode .subtitle {
+            color: #718096;
+        }
+
+        body.light-mode .search-icon {
+            color: #4a5568;
+        }
+
+        body.light-mode #searchInput {
+            background: #ffffff;
+            border: 1px solid #cbd5e0;
+            color: #2d3748;
+        }
+
+        body.light-mode #searchInput:focus {
+            border: 1px solid #4a5568;
+            box-shadow: 0 0 20px rgba(74, 85, 104, 0.2);
+        }
+
+        body.light-mode .category {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+
+        body.light-mode .category-header {
+            background: #f7fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        body.light-mode .category-header:hover {
+            background: #edf2f7;
+        }
+
+        body.light-mode .category-title {
+            color: #2d3748;
+        }
+
+        body.light-mode .category-count {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        body.light-mode .chevron {
+            color: #718096;
+        }
+
+        body.light-mode .category.expanded .chevron {
+            color: #4a5568;
+        }
+
+        body.light-mode .command {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        body.light-mode .command:hover {
+            border: 1px solid #cbd5e0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-mode .command-title {
+            color: #2d3748;
+        }
+
+        body.light-mode .command-description {
+            color: #718096;
+        }
+
+        body.light-mode .copy-button {
+            background: #ffffff;
+            border: 1px solid #cbd5e0;
+            color: #4a5568;
+        }
+
+        body.light-mode .copy-button:hover {
+            background: #edf2f7;
+            color: #2d3748;
+        }
+
+        body.light-mode .copy-button.copied {
+            background: #c6f6d5;
+            border: 1px solid #9ae6b4;
+            color: #22543d;
+        }
+
+        body.light-mode .command-code {
+            background: #edf2f7;
+            color: #2d3748;
+            border: 1px solid #e2e8f0;
+        }
+
+        body.light-mode .no-results {
+            color: #718096;
+        }
+
+        body.light-mode .footer {
+            border-top: 1px solid #e2e8f0;
+            color: #718096;
+        }
+
+        body.light-mode .theme-toggle {
+            background: #ffffff;
+            border: 1px solid #cbd5e0;
+            color: #4a5568;
+        }
+
+        body.light-mode .theme-toggle:hover {
+            background: #edf2f7;
+            color: #2d3748;
+            border-color: #a0aec0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <svg class="terminal-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 17 10 11 4 5"></polyline>
+                        <line x1="12" y1="19" x2="20" y2="19"></line>
+                    </svg>
+                    <div>
+                        <h1>PowerShell Command Library</h1>
+                        <p class="subtitle">Comprehensive collection of Windows administration commands</p>
+                    </div>
+                </div>
+                <button id="themeToggle" class="theme-toggle">
+                    <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <span id="themeText">Light</span>
+                </button>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <svg class="search-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search commands, descriptions, or code..." />
+            </div>
+        </div>
+
+        <!-- Commands Grid -->
+        <div id="commandsContainer" class="categories-grid"></div>
+
+        <!-- No Results -->
+        <div id="noResults" class="no-results hidden">
+            <svg class="no-results-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            <p class="no-results-title">No commands found</p>
+            <p class="no-results-subtitle">Try a different search term</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p id="footerStats"></p>
+        </div>
+    </div>
+
+    <script>
+        const commandData = [
+            {
+                category: "File System",
+                icon: "📁",
+                commands: [
+                    {
+                        title: "Remove old files (30+ days)",
+                        code: `Get-ChildItem | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item -Recurse -Force`,
+                        description: "Clean up old files in current directory"
+                    },
+                    {
+                        title: "Remove all items",
+                        code: `Remove-Item -Path "*" -Recurse -Force`,
+                        description: "⚠️ DANGER: Deletes everything in current directory"
+                    },
+                    {
+                        title: "Clear temp files",
+                        code: `Remove-Item -Path "$env:TEMP\\*" -Recurse -Force`,
+                        description: "Clear Windows temporary files"
+                    },
+                    {
+                        title: "Get directory size",
+                        code: `"{0:N2} MB" -f ((Get-ChildItem -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB)`,
+                        description: "Calculate total directory size"
+                    },
+                    {
+                        title: "Folder size breakdown",
+                        code: `Get-ChildItem -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+    $size = (Get-ChildItem -Recurse -Path $_.FullName -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1MB
+    [PSCustomObject]@{Directory = $_.FullName; Size = "{0:N2} MB" -f $size }
+}`,
+                        description: "Size of each subfolder"
+                    }
+                ]
+            },
+            {
+                category: "Disk Management",
+                icon: "💽",
+                commands: [
+                    {
+                        title: "Check disks",
+                        code: `diskpart\nList Disk`,
+                        description: "Interactive disk management"
+                    },
+                    {
+                        title: "System file check",
+                        code: `sfc -scannow`,
+                        description: "Scan and repair system files"
+                    },
+                    {
+                        title: "DISM scan",
+                        code: `DISM /Online /Cleanup-Image /ScanHealth`,
+                        description: "Check image corruption"
+                    },
+                    {
+                        title: "DISM repair",
+                        code: `DISM /Online /Cleanup-Image /RestoreHealth`,
+                        description: "Repair Windows image"
+                    },
+                    {
+                        title: "Disable hibernation",
+                        code: `Start-Process powercfg -ArgumentList '/hibernate off' -NoNewWindow -Wait`,
+                        description: "⚠️ WARNING: Disables fast startup and hibernation"
+                    }
+                ]
+            },
+            {
+                category: "User Profiles",
+                icon: "👤",
+                commands: [
+                    {
+                        title: "Get logged user",
+                        code: `Get-WmiObject -Class Win32_ComputerSystem | Select-Object -ExpandProperty UserName`,
+                        description: "Show current user"
+                    },
+                    {
+                        title: "Clear credentials",
+                        code: `cmdkey /list | ForEach-Object { if ($_ -match "Target: ([^\\s]+)") { $targetName = $matches[1]; cmdkey /del:$targetName | Out-Null } }`,
+                        description: "⚠️ WARNING: Removes ALL stored credentials"
+                    },
+                    {
+                        title: "Remove profile (WMI)",
+                        code: `Get-WmiObject -Class Win32_UserProfile | Where-Object { $_.LocalPath -eq ("C:\\Users\\" + "username") } | Remove-WmiObject`,
+                        description: "⚠️ DANGER: Permanently deletes user profile"
+                    },
+                    {
+                        title: "Remove profile (CIM)",
+                        code: `$user = 'username'\nGet-CimInstance Win32_UserProfile -Filter ("LocalPath='C:\\\\Users\\\\{0}' AND Loaded=false AND Special=false" -f $user) | Remove-CimInstance`,
+                        description: "⚠️ DANGER: Permanently deletes user profile"
+                    }
+                ]
+            },
+            {
+                category: "Active Directory",
+                icon: "📋",
+                commands: [
+                    {
+                        title: "Find weak passwords",
+                        code: `Import-Module ActiveDirectory\nGet-ADUser -Filter { PasswordNotRequired -eq $true } -Properties Name, PasswordNotRequired | Select-Object Name, PasswordNotRequired`,
+                        description: "Users without password requirements"
+                    },
+                    {
+                        title: "Fix password policy",
+                        code: `Get-ADUser -Filter { PasswordNotRequired -eq $true } | Set-ADUser -PasswordNotRequired $false`,
+                        description: "Enforce password requirements"
+                    },
+                    {
+                        title: "Find never-set passwords",
+                        code: `Get-ADUser -SearchBase "OU=SubOU,OU=ParentOU,OU=Accounts,DC=cc-nh,DC=local" -Filter * -Properties PasswordLastSet | Where-Object { $_.PasswordLastSet -eq $null } | Select-Object Name, SamAccountName`,
+                        description: "Users with null password dates"
+                    },
+                    {
+                        title: "Export group members",
+                        code: `Get-ADGroupMember -Identity "GroupName" | Export-Csv -Path "C:\\temp\\output.csv" -NoTypeInformation`,
+                        description: "Export to CSV"
+                    },
+                    {
+                        title: "Bulk add to group",
+                        code: `$groupName = "M365Users"\n$users = Import-Csv "C:\\Temp\\Users_SamAccountNames.csv"\n\nforeach ($user in $users) {\n    $samAccountName = $user.SamAccountName\n    $adUser = Get-ADUser -Filter { SamAccountName -eq $samAccountName } -Properties SamAccountName\n\n    if ($adUser) {\n        Add-ADGroupMember -Identity $groupName -Members $adUser.SamAccountName\n        Write-Host "Added $samAccountName to group $groupName"\n    }\n    else {\n        Write-Host "User $samAccountName not found in AD"\n    }\n}`,
+                        description: "Add users from CSV"
+                    },
+                    {
+                        title: "Get locked accounts",
+                        code: `Search-ADAccount -LockedOut | Select-Object Name, SamAccountName, LockedOut, LastLogonDate`,
+                        description: "Find locked user accounts"
+                    },
+                    {
+                        title: "Unlock user account",
+                        code: `Unlock-ADAccount -Identity "username"`,
+                        description: "Unlock locked account"
+                    },
+                    {
+                        title: "Get computer last logon",
+                        code: `Get-ADComputer -Identity "ComputerName" -Properties LastLogonDate | Select-Object Name, LastLogonDate, DistinguishedName`,
+                        description: "Check computer activity"
+                    },
+                    {
+                        title: "Find inactive computers",
+                        code: `Get-ADComputer -Filter {LastLogonDate -lt (Get-Date).AddDays(-90)} -Properties LastLogonDate | Select-Object Name, LastLogonDate | Sort-Object LastLogonDate`,
+                        description: "Computers not logged in 90+ days"
+                    },
+                    {
+                        title: "Find inactive users",
+                        code: `Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 -UsersOnly | Select-Object Name, SamAccountName, LastLogonDate`,
+                        description: "Users not logged in 90+ days"
+                    },
+                    {
+                        title: "Get disabled accounts",
+                        code: `Search-ADAccount -AccountDisabled | Select-Object Name, SamAccountName, DistinguishedName`,
+                        description: "List all disabled accounts"
+                    },
+                    {
+                        title: "Get password expiring soon",
+                        code: `Get-ADUser -Filter {Enabled -eq $true -and PasswordNeverExpires -eq $false} -Properties PasswordLastSet, PasswordNeverExpires | Where-Object {$_.PasswordLastSet -lt (Get-Date).AddDays(-60)} | Select-Object Name, SamAccountName, PasswordLastSet`,
+                        description: "Find expiring passwords"
+                    }
+                ]
+            },
+            {
+                category: "Domain Operations",
+                icon: "💻",
+                commands: [
+                    {
+                        title: "Rename computer",
+                        code: `Rename-Computer -NewName "STFL-ADNS" -DomainCredential (New-Object System.Management.Automation.PSCredential ("cc-nh\\administrator", ("YourPassword" | ConvertTo-SecureString -AsPlainText -Force)))`,
+                        description: "Rename on domain"
+                    },
+                    {
+                        title: "Check domain status",
+                        code: `$domain = (Get-CimInstance -Class Win32_ComputerSystem).Domain\nif ($domain) { Write-Host "Device is joined to domain: $domain" } else { Write-Host "Device is not joined to a domain" }`,
+                        description: "Verify domain membership"
+                    },
+                    {
+                        title: "Get domain info",
+                        code: `[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()`,
+                        description: "Detailed domain data"
+                    },
+                    {
+                        title: "GPO report",
+                        code: `gpresult /H C:\\temp\\GPOReport.html`,
+                        description: "Export applied policies"
+                    }
+                ]
+            },
+            {
+                category: "Azure AD",
+                icon: "☁️",
+                commands: [
+                    {
+                        title: "Force AD sync",
+                        code: `Invoke-Command -ComputerName "HUB-DC1-VM" -Credential (New-Object System.Management.Automation.PSCredential ("cc-nh.local\\administrator", (ConvertTo-SecureString "YourPassword" -AsPlainText -Force))) -ScriptBlock { Start-ADSyncSyncCycle -PolicyType Delta -ErrorAction SilentlyContinue }`,
+                        description: "Trigger delta sync"
+                    },
+                    {
+                        title: "Connect Azure AD",
+                        code: `Install-Module -Name AzureAD \nImport-AzureAD\nConnect-AzureAD`,
+                        description: "Setup Azure AD module"
+                    },
+                    {
+                        title: "User creation date",
+                        code: `Get-AzureADUser -ObjectId user@domain.com | Select-Object DisplayName, UserPrincipalName, CreationDate`,
+                        description: "Check account age"
+                    }
+                ]
+            },
+            {
+                category: "Microsoft Graph",
+                icon: "📊",
+                commands: [
+                    {
+                        title: "Install Graph module",
+                        code: `Install-Module Microsoft.Graph -Scope CurrentUser`,
+                        description: "Install Graph SDK"
+                    },
+                    {
+                        title: "Connect to Graph",
+                        code: `Connect-MgGraph -Scopes "User.Read.All"`,
+                        description: "Authenticate"
+                    },
+                    {
+                        title: "Get user info",
+                        code: `Get-MgUser -UserId "youremail@nh-cc.org" | Select-Object *`,
+                        description: "Detailed user data"
+                    },
+                    {
+                        title: "Remove photo",
+                        code: `Remove-MgUserPhoto -UserId "youremail@nh-cc.org"\nDisconnect-MgGraph`,
+                        description: "Delete profile picture"
+                    }
+                ]
+            },
+            {
+                category: "Exchange Online",
+                icon: "📧",
+                commands: [
+                    {
+                        title: "Install module",
+                        code: `Install-Module -Name ExchangeOnlineManagement\nImport-Module ExchangeOnlineManagement`,
+                        description: "Setup Exchange Online"
+                    },
+                    {
+                        title: "Connect",
+                        code: `Connect-ExchangeOnline -UserPrincipalName youremail@nh-cc.org`,
+                        description: "Authenticate"
+                    },
+                    {
+                        title: "Get mailbox",
+                        code: `Get-Mailbox -Identity "username" | Format-List DisplayName, PrimarySmtpAddress, EmailAddresses`,
+                        description: "Mailbox details"
+                    },
+                    {
+                        title: "Search mailboxes",
+                        code: `Get-Recipient -Filter { EmailAddresses -like "*sta.*" } | Select-Object DisplayName, PrimarySmtpAddress`,
+                        description: "Find by pattern"
+                    },
+                    {
+                        title: "Restore mailbox",
+                        code: `Restore-InactiveMailbox -Identity "user@domain.com" -TargetMailbox "user@domain.com"`,
+                        description: "Recover deleted"
+                    }
+                ]
+            },
+            {
+                category: "Calendars",
+                icon: "📅",
+                commands: [
+                    {
+                        title: "Set work hours",
+                        code: `Set-MailboxCalendarConfiguration -Identity "youremail@nh-cc.org" -WorkingHoursStartTime "08:00:00" -WorkingHoursEndTime "17:00:00"`,
+                        description: "Configure calendar"
+                    },
+                    {
+                        title: "Group settings",
+                        code: `Get-UnifiedGroup "ITDepartment" | Format-Table DisplayName, HiddenFrom`,
+                        description: "View calendar properties"
+                    }
+                ]
+            },
+            {
+                category: "Distribution Groups",
+                icon: "📮",
+                commands: [
+                    {
+                        title: "Preview members",
+                        code: `Get-DynamicDistributionGroup -Identity "GrHQNew" | Get-Recipient -RecipientPreviewFilter`,
+                        description: "Dynamic group members"
+                    },
+                    {
+                        title: "Check restrictions",
+                        code: `Get-DynamicDistributionGroup -Identity "GrHQNew" | Select-Object -ExpandProperty AcceptMessagesOnlyFromSendersOrMembers`,
+                        description: "Who can send"
+                    },
+                    {
+                        title: "View all members",
+                        code: `$group = Get-DynamicDistributionGroup -Identity "GrHQNew"\n$filter = $group.RecipientFilter\nGet-Recipient -RecipientPreviewFilter $filter`,
+                        description: "Calculated members"
+                    }
+                ]
+            },
+            {
+                category: "Public Folders",
+                icon: "📂",
+                commands: [
+                    {
+                        title: "Get permissions",
+                        code: `Get-PublicFolderClientPermission -Identity "\\IT Department\\IT Contacts"`,
+                        description: "List all permissions"
+                    },
+                    {
+                        title: "Remove permission",
+                        code: `Remove-PublicFolderClientPermission -Identity "\\IT Department\\IT Contacts" -User "youremail@nh-cc.org" -Confirm:$false`,
+                        description: "Revoke access"
+                    },
+                    {
+                        title: "Add permission",
+                        code: `Add-PublicFolderClientPermission -Identity "\\IT Department\\IT Contacts" -User "youremail@nh-cc.org" -AccessRights Editor`,
+                        description: "Grant editor rights"
+                    }
+                ]
+            },
+            {
+                category: "Compliance",
+                icon: "🔒",
+                commands: [
+                    {
+                        title: "Connect compliance",
+                        code: `Connect-IPPSSession`,
+                        description: "Security & Compliance"
+                    },
+                    {
+                        title: "Create search",
+                        code: `New-ComplianceSearch -Name "SearchRecoverableItems" -ExchangeLocation "user@domain.com" -ContentMatchQuery 'kind:email'`,
+                        description: "Setup eDiscovery"
+                    },
+                    {
+                        title: "Start search",
+                        code: `Start-ComplianceSearch -Identity "SearchRecoverableItems"`,
+                        description: "Execute search"
+                    },
+                    {
+                        title: "Purge results",
+                        code: `New-ComplianceSearchAction -SearchName "SearchRecoverableItems" -Purge -PurgeType HardDelete`,
+                        description: "⚠️ DANGER: Permanently deletes emails - unrecoverable"
+                    },
+                    {
+                        title: "Get status",
+                        code: `Get-ComplianceSearch`,
+                        description: "View all searches"
+                    }
+                ]
+            },
+            {
+                category: "Outlook Cleanup",
+                icon: "🧹",
+                commands: [
+                    {
+                        title: "Clear autocomplete",
+                        code: `$Path = "$env:APPDATA\\Microsoft\\Outlook\\RoamCache"\nRemove-Item "$Path\\*.dat" -Force -ErrorAction SilentlyContinue\nWrite-Host "Auto-complete cache cleared."`,
+                        description: "Remove suggestions"
+                    },
+                    {
+                        title: "Clear OAB",
+                        code: `$OABPath = "$env:LOCALAPPDATA\\Microsoft\\Outlook\\Offline Address Books"\nRemove-Item "$OABPath\\*" -Recurse -Force -ErrorAction SilentlyContinue`,
+                        description: "Delete address book cache"
+                    }
+                ]
+            },
+            {
+                category: "Remote Desktop",
+                icon: "🖥️",
+                commands: [
+                    {
+                        title: "Enable RDP",
+                        code: `Set-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' -Name 'fDenyTSConnections' -Value 0\nSet-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp' -Name 'UserAuthentication' -Value 1\nEnable-NetFirewallRule -DisplayGroup "Remote Desktop"\nRestart-Service -Name TermService -Force`,
+                        description: "Enable with NLA"
+                    },
+                    {
+                        title: "Disable RDP",
+                        code: `Set-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' -Name 'fDenyTSConnections' -Value 1\nSet-ItemProperty -Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp' -Name 'UserAuthentication' -Value 0\nDisable-NetFirewallRule -DisplayGroup "Remote Desktop"\nRestart-Service -Name TermService -Force`,
+                        description: "Disable completely"
+                    }
+                ]
+            },
+            {
+                category: "Windows Update",
+                icon: "🔄",
+                commands: [
+                    {
+                        title: "Start scan",
+                        code: `usoclient.exe StartScan`,
+                        description: "Trigger update check"
+                    },
+                    {
+                        title: "Refresh settings",
+                        code: `usoclient.exe RefreshSettings`,
+                        description: "Reset configuration"
+                    },
+                    {
+                        title: "Get log",
+                        code: `Get-WindowsUpdateLog`,
+                        description: "Generate readable log"
+                    },
+                    {
+                        title: "Install updates",
+                        code: `[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12\nif (!(Get-Module -ListAvailable -Name PSWindowsUpdate)) { \n    Install-Module -Name PSWindowsUpdate -Force\n    Import-Module PSWindowsUpdate \n} else { \n    Import-Module PSWindowsUpdate \n}\nAdd-WUServiceManager -ServiceID "7971f918-a847-4430-9279-4a52d1efe18d" -Confirm:$false\n$availableUpdates = Get-WindowsUpdate -MicrosoftUpdate | Where-Object { $_.UpdateType -eq "Software" -and $_.IsDriver -eq $false }\nif (!$availableUpdates.Count) { \n    Write-Output "No updates are available from Microsoft Update." \n} else { \n    $availableUpdates | Where-Object { $_.UpdateType -eq "Software" -and $_.IsDriver -eq $false } | Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot | Out-File "C:\\Windows\\PSWindowsUpdate.log" \n}`,
+                        description: "Automated installation"
+                    },
+                    {
+                        title: "Check errors",
+                        code: `Start-Process -FilePath "C:\\Temp\\SetupDiag.exe" -ArgumentList "/Output:C:\\Temp\\Results.txt"`,
+                        description: "Diagnose failures"
+                    }
+                ]
+            },
+            {
+                category: "Licensing",
+                icon: "🔑",
+                commands: [
+                    {
+                        title: "Install key",
+                        code: `slmgr /ipk R2NHG-DFQ27-BC3J4-PQPY9-Y7V2F`,
+                        description: "Add product key"
+                    },
+                    {
+                        title: "Activate",
+                        code: `slmgr /ato`,
+                        description: "Activate Windows"
+                    },
+                    {
+                        title: "Check status",
+                        code: `cscript //nologo C:\\Windows\\System32\\slmgr.vbs /dlv`,
+                        description: "Detailed license info"
+                    },
+                    {
+                        title: "Get edition",
+                        code: `Get-WindowsEdition -Online`,
+                        description: "Show Windows edition"
+                    }
+                ]
+            },
+            {
+                category: "Intune",
+                icon: "📱",
+                commands: [
+                    {
+                        title: "Force sync",
+                        code: `Get-ScheduledTask | Where-Object { $_.TaskName -eq 'PushLaunch' } | Start-ScheduledTask`,
+                        description: "Trigger policy sync"
+                    }
+                ]
+            },
+            {
+                category: "System Info",
+                icon: "ℹ️",
+                commands: [
+                    {
+                        title: "Check Secure Boot",
+                        code: `Confirm-SecureBootUEFI`,
+                        description: "UEFI status"
+                    },
+                    {
+                        title: "Get uptime",
+                        code: `function Get-Uptime {\n    [CmdletBinding()]\n    param (\n        [string]$ComputerName = $env:COMPUTERNAME\n    )\n\n    foreach ($Computer in $ComputerName) {\n        try {\n            $os = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $Computer\n            $diff = $os.ConvertToDateTime($os.LocalDateTime) - $os.ConvertToDateTime($os.LastBootUpTime)\n            $uptimeDays = $diff.Days\n\n            $properties = @{\n                'ComputerName' = $Computer\n                'UptimeDays'   = $uptimeDays\n            }\n            $obj = New-Object -TypeName PSObject -Property $properties\n            Write-Output $obj\n        }\n        catch {\n            Write-Warning "Failed to retrieve uptime for $Computer. Error: $_"\n        }\n    }\n}\nGet-Uptime`,
+                        description: "Days since reboot"
+                    },
+                    {
+                        title: "Battery report",
+                        code: `powercfg /batteryreport /output "C:\\temp\\battery-report.html"`,
+                        description: "Battery health"
+                    },
+                    {
+                        title: "Memory analysis",
+                        code: `$os = Get-CimInstance -ClassName Win32_OperatingSystem\n$ramModules = Get-CimInstance -ClassName Win32_PhysicalMemory\n\n$total = [math]::Round($os.TotalVisibleMemorySize / 1024, 2)\n$free = [math]::Round($os.FreePhysicalMemory / 1024, 2)\n$used = [math]::Round($total - $free, 2)\n$percentUsed = [math]::Round(($used / $total) * 100, 2)\n$avgSpeed = [math]::Round(($ramModules | Measure-Object -Property Speed -Average).Average, 0)\n\n[PSCustomObject]@{\n    "Total (MB)"    = $total\n    "Used (MB)"     = $used\n    "Free (MB)"     = $free\n    "Used (%)"      = $percentUsed\n    "Average Speed" = "$avgSpeed MHz"\n    "Modules"       = ($ramModules | Select-Object BankLabel, Capacity, Speed | ForEach-Object {\n            [PSCustomObject]@{\n                Bank          = $_.BankLabel\n                "Size (MB)"   = [math]::Round($_.Capacity / 1MB, 0)\n                "Speed (MHz)" = $_.Speed\n            }\n        })\n}`,
+                        description: "RAM details"
+                    },
+                    {
+                        title: "Office version",
+                        code: `Get-ItemProperty HKLM:\\Software\\Microsoft\\Office\\ClickToRun\\Configuration | Select-Object -Property Platform`,
+                        description: "32 or 64-bit"
+                    }
+                ]
+            },
+            {
+                category: "Time Sync",
+                icon: "🕐",
+                commands: [
+                    {
+                        title: "Sync with domain",
+                        code: `w32tm /config /syncfromflags:domhier\nnet stop w32time\nnet start w32time\nw32tm /resync`,
+                        description: "Force time sync"
+                    }
+                ]
+            },
+            {
+                category: "Printers",
+                icon: "🖨️",
+                commands: [
+                    {
+                        title: "List printers",
+                        code: `Get-Printer`,
+                        description: "Show all"
+                    },
+                    {
+                        title: "Add printer",
+                        code: `(New-Object -ComObject WScript.Network).AddWindowsPrinterConnection("\\\\HUB-VCPI2-VM\\HQ-HR-KON227")\n(New-Object -ComObject WScript.Network).SetDefaultPrinter("\\\\HUB-VCPI2-VM\\HQ-FIN-RIC")`,
+                        description: "Add and set default"
+                    },
+                    {
+                        title: "Remove printer",
+                        code: `Remove-Printer -Name "St. Charles RICOH IM C400SR"`,
+                        description: "Uninstall"
+                    }
+                ]
+            },
+            {
+                category: "WiFi",
+                icon: "📡",
+                commands: [
+                    {
+                        title: "Show profiles",
+                        code: `netsh wlan show profiles`,
+                        description: "List saved networks"
+                    },
+                    {
+                        title: "Export profile",
+                        code: `netsh wlan export profile name="Wifi_Name" folder="C:\\temp" key=clear`,
+                        description: "Save with password"
+                    },
+                    {
+                        title: "Import profile",
+                        code: `netsh wlan add profile filename="C:\\Temp\\Wi-Fi-Chelmsford.xml"`,
+                        description: "Add from XML"
+                    },
+                    {
+                        title: "Remove profile",
+                        code: `netsh wlan delete profile name="WHC-Guest"`,
+                        description: "Delete network"
+                    }
+                ]
+            },
+            {
+                category: "Software",
+                icon: "📦",
+                commands: [
+                    {
+                        title: "Search packages",
+                        code: `Get-Package -Name '*AppName*'`,
+                        description: "Find installed software"
+                    },
+                    {
+                        title: "Uninstall Dell",
+                        code: `Get-Package -Name "*Dell Support*" | Uninstall-Package -Force`,
+                        description: "Remove bloatware"
+                    },
+                    {
+                        title: "Uninstall N-Able",
+                        code: `Get-Package -Name '*Advance*' | Uninstall-Package -Force`,
+                        description: "Remove RMM agent"
+                    },
+                    {
+                        title: "Uninstall Arctic Wolf",
+                        code: `Get-Package -name *Arctic* | Uninstall-Package -Force`,
+                        description: "Remove security software"
+                    },
+                    {
+                        title: "Find install switches",
+                        code: `.\\strings.exe -nobanner -q "C:\\Path\\To\\Installer.exe" | Select-String -Pattern "/silent", "/quiet", "/verysilent", "/S", "/install", "/?"`,
+                        description: "Silent install params"
+                    }
+                ]
+            },
+            {
+                category: "RMM Cache",
+                icon: "🧼",
+                commands: [
+                    {
+                        title: "Clear cache",
+                        code: `Remove-Item -Path "C:\\ProgramData\\MspPlatform\\FileCacheServiceAgent\\cache\\*" -Recurse -Force`,
+                        description: "N-Able/SolarWinds"
+                    },
+                    {
+                        title: "Clear PME",
+                        code: `Function Clear-PME {\n    Write-Host "PME Cache Cleanup..." -ForegroundColor Cyan\n    $CacheFolderPaths = "$env:ProgramData\\SolarWinds MSP\\SolarWinds.MSP.CacheService", "$env:ProgramData\\SolarWinds MSP\\SolarWinds.MSP.CacheService\\cache", "$env:ProgramData\\MspPlatform\\FileCacheServiceAgent", "$env:ProgramData\\MspPlatform\\FileCacheServiceAgent\\cache"\n    ForEach ($CacheFolderPath in $CacheFolderPaths) {\n        If (Test-Path -Path "$CacheFolderPath") {\n            Try {\n                Write-Output "Performing cleanup of '$CacheFolderPath' folder"\n                [Void](Remove-Item -Path "$CacheFolderPath\\*.*" -Force -Confirm:$false)\n            }\n            Catch {\n                Write-EventLog @WriteEventLogErrorParams -Message "Unable to cleanup '$CacheFolderPath\\*.*' aborting. Error: $($_.Exception.Message).\`nScript: Repair-PME.ps1"\n                Throw "Unable to cleanup '$CacheFolderPath\\*.*' aborting. Error: $($_.Exception.Message)"\n            }\n        }\n    }\n}\nClear-PME`,
+                        description: "Comprehensive cleanup"
+                    }
+                ]
+            },
+            {
+                category: "SentinelOne",
+                icon: "🛡️",
+                commands: [
+                    {
+                        title: "Unprotect",
+                        code: `.\\sentinelctl unprotect -k "PassPhrase"`,
+                        description: "Disable tamper protection"
+                    },
+                    {
+                        title: "Install",
+                        code: `Start-Process -FilePath "msiexec.exe" -ArgumentList '/i "C:\\Temp\\SentinelInstall.msi" TOKEN="site-token" /qn' -NoNewWindow -Wait`,
+                        description: "Silent install"
+                    },
+                    {
+                        title: "Repair",
+                        code: `.\\SentinelInstaller.msi -t "site-id" --force`,
+                        description: "Force repair"
+                    }
+                ]
+            },
+            {
+                category: "Sysmon",
+                icon: "🔍",
+                commands: [
+                    {
+                        title: "Check version",
+                        code: `(Get-Item "C:\\Windows\\sysmon64.exe").VersionInfo.FileVersion`,
+                        description: "Show version"
+                    },
+                    {
+                        title: "Install",
+                        code: `.\\sysmon64.exe -i -accepteula`,
+                        description: "Install with defaults"
+                    },
+                    {
+                        title: "Uninstall",
+                        code: `.\\sysmon64.exe -u force`,
+                        description: "Force remove"
+                    }
+                ]
+            },
+            {
+                category: "Security",
+                icon: "🔐",
+                commands: [
+                    {
+                        title: "Lock workstation",
+                        code: `C:\\Windows\\system32\\rundll32.exe user32.dll, LockWorkStation`,
+                        description: "Lock immediately"
+                    },
+                    {
+                        title: "Enable BitLocker",
+                        code: `Enable-BitLocker -MountPoint "C:" -EncryptionMethod "AES256" -RecoveryPasswordProtector -SkipHardwareTest`,
+                        description: "Encrypt C: drive"
+                    }
+                ]
+            },
+            {
+                category: "Network Drives",
+                icon: "🌐",
+                commands: [
+                    {
+                        title: "List drives",
+                        code: `Get-PSDrive -PSProvider FileSystem`,
+                        description: "All drives"
+                    },
+                    {
+                        title: "Map drive",
+                        code: `New-PSDrive -Name "T" -PSProvider FileSystem -Root "\\\\hub-fs02-vm\\CCNH\\IT" -Persist`,
+                        description: "Persistent mapping"
+                    }
+                ]
+            },
+            {
+                category: "Misc",
+                icon: "🔧",
+                commands: [
+                    {
+                        title: "Clear clipboard",
+                        code: `Add-Type -AssemblyName System.Windows.Forms\n[System.Windows.Forms.Clipboard]::Clear()`,
+                        description: "Empty clipboard"
+                    },
+                    {
+                        title: "Console beep",
+                        code: `$endTime = (Get-Date).AddSeconds(5)\nwhile ((Get-Date) -lt $endTime) { \n    [Console]::Beep(500, 1000)\n    Start-Sleep -Milliseconds 500 \n}`,
+                        description: "Beep for 5 seconds"
+                    },
+                    {
+                        title: "Search PST files",
+                        code: `Get-ChildItem -Path "F:\\" -Recurse -Filter *.pst -ErrorAction SilentlyContinue -Force | ForEach-Object {\n    [PSCustomObject]@{\n        Path = $_.FullName\n        Size = "{0:N2} MB" -f ($_.Length / 1MB)\n    }\n} | Export-Csv -Path "C:\\Temp\\PST\\PSTFiles.csv" -NoTypeInformation`,
+                        description: "Find Outlook data files"
+                    },
+                    {
+                        title: "Find large files",
+                        code: `Get-ChildItem -Recurse -File -ErrorAction SilentlyContinue | Sort-Object Length -Descending | Select-Object -First 10 FullName, @{Name="Size (MB)";Expression={[math]::Round($_.Length / 1MB, 2)}}`,
+                        description: "Top 10 largest files"
+                    },
+                    {
+                        title: "Create symbolic link",
+                        code: `New-Item -ItemType SymbolicLink -Path "C:\\Link" -Target "C:\\Target"`,
+                        description: "Create symlink"
+                    },
+                    {
+                        title: "Take ownership",
+                        code: `takeown /f "C:\\path" /r /d y\nicacls "C:\\path" /grant administrators:F /t`,
+                        description: "⚠️ WARNING: Changes permissions - can affect system files"
+                    }
+                ]
+            },
+            {
+                category: "Event Logs",
+                icon: "📜",
+                commands: [
+                    {
+                        title: "Export security logs",
+                        code: `Get-EventLog -LogName Security -After (Get-Date).AddDays(-7) | Export-Csv C:\\temp\\security.csv -NoTypeInformation`,
+                        description: "Last 7 days of security events"
+                    },
+                    {
+                        title: "Clear event log",
+                        code: `Clear-EventLog -LogName Application`,
+                        description: "⚠️ WARNING: Deletes all application event logs"
+                    },
+                    {
+                        title: "Failed login attempts",
+                        code: `Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4625} -MaxEvents 50 | Select-Object TimeCreated, Message`,
+                        description: "Recent failed logins"
+                    },
+                    {
+                        title: "System errors",
+                        code: `Get-WinEvent -FilterHashtable @{LogName='System'; Level=2} -MaxEvents 50 | Select-Object TimeCreated, ProviderName, Message`,
+                        description: "Recent system errors"
+                    },
+                    {
+                        title: "Application crashes",
+                        code: `Get-WinEvent -FilterHashtable @{LogName='Application'; Level=2} -MaxEvents 50 | Select-Object TimeCreated, ProviderName, Message`,
+                        description: "Recent application errors"
+                    }
+                ]
+            },
+            {
+                category: "Network",
+                icon: "🌐",
+                commands: [
+                    {
+                        title: "Get IP configuration",
+                        code: `Get-NetIPConfiguration`,
+                        description: "Network adapter details"
+                    },
+                    {
+                        title: "Flush DNS cache",
+                        code: `Clear-DnsClientCache`,
+                        description: "Clear DNS resolver cache"
+                    },
+                    {
+                        title: "Test port connectivity",
+                        code: `Test-NetConnection -ComputerName google.com -Port 443`,
+                        description: "Check if port is open"
+                    },
+                    {
+                        title: "Get open ports",
+                        code: `Get-NetTCPConnection | Where-Object {$_.State -eq "Listen"} | Select-Object LocalAddress, LocalPort, OwningProcess, @{Name="ProcessName";Expression={(Get-Process -Id $_.OwningProcess).Name}} | Sort-Object LocalPort`,
+                        description: "Listening ports with processes"
+                    },
+                    {
+                        title: "Release/renew DHCP",
+                        code: `ipconfig /release\nipconfig /renew`,
+                        description: "Refresh DHCP lease"
+                    },
+                    {
+                        title: "Show routing table",
+                        code: `Get-NetRoute | Select-Object DestinationPrefix, NextHop, InterfaceAlias, RouteMetric | Sort-Object RouteMetric`,
+                        description: "Display routing information"
+                    },
+                    {
+                        title: "Disable IPv6",
+                        code: `Disable-NetAdapterBinding -Name "*" -ComponentID ms_tcpip6`,
+                        description: "Turn off IPv6 on all adapters"
+                    },
+                    {
+                        title: "Get MAC addresses",
+                        code: `Get-NetAdapter | Select-Object Name, MacAddress, Status`,
+                        description: "List adapter MAC addresses"
+                    },
+                    {
+                        title: "Reset network stack",
+                        code: `netsh winsock reset\nnetsh int ip reset\nipconfig /flushdns`,
+                        description: "⚠️ WARNING: Resets network - requires reboot"
+                    }
+                ]
+            },
+            {
+                category: "Services",
+                icon: "⚙️",
+                commands: [
+                    {
+                        title: "List running services",
+                        code: `Get-Service | Where-Object {$_.Status -eq "Running"} | Select-Object Name, DisplayName, StartType`,
+                        description: "Show active services"
+                    },
+                    {
+                        title: "Restart service",
+                        code: `Restart-Service -Name "Spooler" -Force`,
+                        description: "Force restart a service"
+                    },
+                    {
+                        title: "Disable service",
+                        code: `Set-Service -Name "servicename" -StartupType Disabled`,
+                        description: "Prevent service from starting"
+                    },
+                    {
+                        title: "Enable service",
+                        code: `Set-Service -Name "servicename" -StartupType Automatic\nStart-Service -Name "servicename"`,
+                        description: "Set to auto-start and start"
+                    },
+                    {
+                        title: "Get service dependencies",
+                        code: `Get-Service -Name "servicename" | Select-Object -ExpandProperty DependentServices`,
+                        description: "Services that depend on this one"
+                    },
+                    {
+                        title: "Stop service and dependencies",
+                        code: `Stop-Service -Name "servicename" -Force -Confirm:$false`,
+                        description: "Stop service forcefully"
+                    }
+                ]
+            },
+            {
+                category: "Scheduled Tasks",
+                icon: "📅",
+                commands: [
+                    {
+                        title: "List active tasks",
+                        code: `Get-ScheduledTask | Where-Object {$_.State -ne "Disabled"} | Select-Object TaskName, State, TaskPath`,
+                        description: "Show enabled tasks"
+                    },
+                    {
+                        title: "Export task",
+                        code: `Export-ScheduledTask -TaskName "TaskName" -TaskPath "\\" | Out-File C:\\temp\\task.xml`,
+                        description: "Backup task to XML"
+                    },
+                    {
+                        title: "Disable task",
+                        code: `Disable-ScheduledTask -TaskName "TaskName"`,
+                        description: "Turn off scheduled task"
+                    },
+                    {
+                        title: "Enable task",
+                        code: `Enable-ScheduledTask -TaskName "TaskName"`,
+                        description: "Turn on scheduled task"
+                    },
+                    {
+                        title: "Run task now",
+                        code: `Start-ScheduledTask -TaskName "TaskName"`,
+                        description: "Execute task immediately"
+                    }
+                ]
+            },
+            {
+                category: "Performance",
+                icon: "📊",
+                commands: [
+                    {
+                        title: "Top CPU processes",
+                        code: `Get-Process | Sort-Object CPU -Descending | Select-Object -First 10 Name, CPU, @{Name="Memory (MB)";Expression={[math]::Round($_.WS / 1MB, 2)}}`,
+                        description: "Highest CPU usage"
+                    },
+                    {
+                        title: "Top memory processes",
+                        code: `Get-Process | Sort-Object WS -Descending | Select-Object -First 10 Name, @{Name="Memory (MB)";Expression={[math]::Round($_.WS / 1MB, 2)}}, CPU`,
+                        description: "Highest RAM usage"
+                    },
+                    {
+                        title: "Disk performance",
+                        code: `Get-Counter '\\PhysicalDisk(*)\\% Disk Time' | Select-Object -ExpandProperty CounterSamples | Select-Object Path, CookedValue`,
+                        description: "Current disk activity"
+                    },
+                    {
+                        title: "CPU usage",
+                        code: `Get-Counter '\\Processor(_Total)\\% Processor Time' | Select-Object -ExpandProperty CounterSamples | Select-Object CookedValue`,
+                        description: "Current CPU percentage"
+                    }
+                ]
+            },
+            {
+                category: "Firewall",
+                icon: "🔥",
+                commands: [
+                    {
+                        title: "Get firewall status",
+                        code: `Get-NetFirewallProfile | Select-Object Name, Enabled`,
+                        description: "Check firewall state"
+                    },
+                    {
+                        title: "Enable firewall",
+                        code: `Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True`,
+                        description: "Turn on all profiles"
+                    },
+                    {
+                        title: "Disable firewall",
+                        code: `Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False`,
+                        description: "⚠️ DANGER: Disables all firewall protection"
+                    },
+                    {
+                        title: "Add inbound rule",
+                        code: `New-NetFirewallRule -DisplayName "Allow Port 8080" -Direction Inbound -Protocol TCP -LocalPort 8080 -Action Allow`,
+                        description: "Allow TCP port"
+                    },
+                    {
+                        title: "List enabled rules",
+                        code: `Get-NetFirewallRule | Where-Object {$_.Enabled -eq 'True'} | Select-Object DisplayName, Direction, Action | Sort-Object DisplayName`,
+                        description: "Show active firewall rules"
+                    },
+                    {
+                        title: "Remove firewall rule",
+                        code: `Remove-NetFirewallRule -DisplayName "Allow Port 8080"`,
+                        description: "Delete specific rule"
+                    },
+                    {
+                        title: "Block outbound application",
+                        code: `New-NetFirewallRule -DisplayName "Block App" -Direction Outbound -Program "C:\\Path\\app.exe" -Action Block`,
+                        description: "Prevent app internet access"
+                    }
+                ]
+            },
+            {
+                category: "Environment Variables",
+                icon: "🔤",
+                commands: [
+                    {
+                        title: "List all variables",
+                        code: `Get-ChildItem Env: | Sort-Object Name`,
+                        description: "Show environment variables"
+                    },
+                    {
+                        title: "Set user variable",
+                        code: `[Environment]::SetEnvironmentVariable("VAR_NAME", "value", "User")`,
+                        description: "Add user-level variable"
+                    },
+                    {
+                        title: "Set system variable",
+                        code: `[Environment]::SetEnvironmentVariable("VAR_NAME", "value", "Machine")`,
+                        description: "⚠️ WARNING: Modifies system-wide environment variables"
+                    },
+                    {
+                        title: "Get specific variable",
+                        code: `$env:COMPUTERNAME`,
+                        description: "Display single variable"
+                    },
+                    {
+                        title: "Add to PATH (user)",
+                        code: `$path = [Environment]::GetEnvironmentVariable("Path", "User")\n[Environment]::SetEnvironmentVariable("Path", "$path;C:\\NewPath", "User")`,
+                        description: "Append to user PATH"
+                    },
+                    {
+                        title: "Remove variable",
+                        code: `[Environment]::SetEnvironmentVariable("VAR_NAME", $null, "User")`,
+                        description: "Delete user variable"
+                    }
+                ]
+            },
+            {
+                category: "Registry",
+                icon: "📝",
+                commands: [
+                    {
+                        title: "Export registry key",
+                        code: `reg export "HKLM\\SOFTWARE\\KeyName" C:\\temp\\backup.reg`,
+                        description: "Backup registry key"
+                    },
+                    {
+                        title: "Import registry file",
+                        code: `reg import C:\\temp\\backup.reg`,
+                        description: "Restore from .reg file"
+                    },
+                    {
+                        title: "Delete registry key",
+                        code: `Remove-Item -Path "HKLM:\\SOFTWARE\\KeyName" -Recurse -Force`,
+                        description: "⚠️ DANGER: Deletes registry keys - can break Windows"
+                    },
+                    {
+                        title: "Get registry value",
+                        code: `Get-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion"`,
+                        description: "Read registry values"
+                    },
+                    {
+                        title: "Set registry value",
+                        code: `Set-ItemProperty -Path "HKLM:\\SOFTWARE\\KeyName" -Name "ValueName" -Value "NewValue"`,
+                        description: "Modify registry entry"
+                    },
+                    {
+                        title: "Create registry key",
+                        code: `New-Item -Path "HKLM:\\SOFTWARE\\NewKey" -Force`,
+                        description: "Add new registry key"
+                    }
+                ]
+            },
+            {
+                category: "Windows Features",
+                icon: "🎛️",
+                commands: [
+                    {
+                        title: "List installed features",
+                        code: `Get-WindowsOptionalFeature -Online | Where-Object {$_.State -eq "Enabled"} | Select-Object FeatureName`,
+                        description: "Show enabled features"
+                    },
+                    {
+                        title: "Enable feature",
+                        code: `Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -NoRestart`,
+                        description: "Turn on Windows feature"
+                    },
+                    {
+                        title: "Disable feature",
+                        code: `Disable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -NoRestart`,
+                        description: "Turn off Windows feature"
+                    },
+                    {
+                        title: "Install Hyper-V",
+                        code: `Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All`,
+                        description: "Enable Hyper-V role"
+                    },
+                    {
+                        title: "Install WSL",
+                        code: `wsl --install`,
+                        description: "Install Windows Subsystem for Linux"
+                    }
+                ]
+            },
+            {
+                category: "Process Management",
+                icon: "⚡",
+                commands: [
+                    {
+                        title: "Kill process by name",
+                        code: `Stop-Process -Name "notepad" -Force`,
+                        description: "Terminate by process name"
+                    },
+                    {
+                        title: "Kill process by PID",
+                        code: `Stop-Process -Id 1234 -Force`,
+                        description: "Terminate by process ID"
+                    },
+                    {
+                        title: "Get process path",
+                        code: `Get-Process | Select-Object Name, Path | Where-Object {$_.Path -ne $null}`,
+                        description: "Show executable locations"
+                    },
+                    {
+                        title: "Kill all Chrome",
+                        code: `Get-Process chrome | Stop-Process -Force`,
+                        description: "Close all Chrome processes"
+                    },
+                    {
+                        title: "Process with window title",
+                        code: `Get-Process | Where-Object {$_.MainWindowTitle -ne ""} | Select-Object Name, MainWindowTitle`,
+                        description: "Show processes with windows"
+                    }
+                ]
+            },
+            {
+                category: "Certificates",
+                icon: "🎫",
+                commands: [
+                    {
+                        title: "List personal certificates",
+                        code: `Get-ChildItem -Path Cert:\\CurrentUser\\My | Select-Object Subject, Thumbprint, NotAfter`,
+                        description: "User certificates"
+                    },
+                    {
+                        title: "List machine certificates",
+                        code: `Get-ChildItem -Path Cert:\\LocalMachine\\My | Select-Object Subject, Thumbprint, NotAfter`,
+                        description: "Computer certificates"
+                    },
+                    {
+                        title: "Export certificate",
+                        code: `$cert = Get-ChildItem Cert:\\CurrentUser\\My | Where-Object {$_.Subject -like "*YourName*"} | Select-Object -First 1\nExport-Certificate -Cert $cert -FilePath C:\\temp\\cert.cer`,
+                        description: "Save certificate to file"
+                    },
+                    {
+                        title: "Import certificate",
+                        code: `Import-Certificate -FilePath C:\\temp\\cert.cer -CertStoreLocation Cert:\\LocalMachine\\Root`,
+                        description: "Add trusted root cert"
+                    },
+                    {
+                        title: "Find expiring certificates",
+                        code: `Get-ChildItem -Path Cert:\\LocalMachine\\My | Where-Object {$_.NotAfter -lt (Get-Date).AddDays(30)} | Select-Object Subject, NotAfter`,
+                        description: "Certs expiring in 30 days"
+                    }
+                ]
+            },
+            {
+                category: "Group Policy",
+                icon: "📋",
+                commands: [
+                    {
+                        title: "Force policy update",
+                        code: `gpupdate /force`,
+                        description: "Apply GPO changes now"
+                    },
+                    {
+                        title: "Policy update background",
+                        code: `gpupdate /target:computer /wait:0`,
+                        description: "Update computer policies"
+                    },
+                    {
+                        title: "User policy update",
+                        code: `gpupdate /target:user /wait:0`,
+                        description: "Update user policies"
+                    },
+                    {
+                        title: "View applied policies",
+                        code: `gpresult /r`,
+                        description: "Display policy results"
+                    }
+                ]
+            },
+            {
+                category: "Power Management",
+                icon: "🔋",
+                commands: [
+                    {
+                        title: "List power plans",
+                        code: `powercfg /list`,
+                        description: "Show available power plans"
+                    },
+                    {
+                        title: "Get active plan",
+                        code: `powercfg /getactivescheme`,
+                        description: "Current power plan"
+                    },
+                    {
+                        title: "Set high performance",
+                        code: `powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c`,
+                        description: "Switch to high performance"
+                    },
+                    {
+                        title: "Disable sleep",
+                        code: `powercfg /change standby-timeout-ac 0\npowercfg /change standby-timeout-dc 0`,
+                        description: "Never sleep (AC & battery)"
+                    },
+                    {
+                        title: "Disable monitor timeout",
+                        code: `powercfg /change monitor-timeout-ac 0`,
+                        description: "Screen always on (plugged in)"
+                    },
+                    {
+                        title: "Sleep report",
+                        code: `powercfg /sleepstudy /output C:\\temp\\sleepstudy.html`,
+                        description: "Analyze sleep/wake history"
+                    }
+                ]
+            },
+            {
+                category: "USB Devices",
+                icon: "🔌",
+                commands: [
+                    {
+                        title: "List USB devices",
+                        code: `Get-PnpDevice -PresentOnly | Where-Object {$_.InstanceId -match '^USB'} | Select-Object Status, Class, FriendlyName`,
+                        description: "Show connected USB devices"
+                    },
+                    {
+                        title: "Disable USB device",
+                        code: `$device = Get-PnpDevice | Where-Object {$_.FriendlyName -like "*DeviceName*"}\nDisable-PnpDevice -InstanceId $device.InstanceId -Confirm:$false`,
+                        description: "Turn off specific device"
+                    },
+                    {
+                        title: "Enable USB device",
+                        code: `$device = Get-PnpDevice | Where-Object {$_.FriendlyName -like "*DeviceName*"}\nEnable-PnpDevice -InstanceId $device.InstanceId -Confirm:$false`,
+                        description: "Turn on specific device"
+                    }
+                ]
+            },
+            {
+                category: "System Cleanup",
+                icon: "🧹",
+                commands: [
+                    {
+                        title: "Run Disk Cleanup",
+                        code: `cleanmgr /sageset:1`,
+                        description: "Configure cleanup options"
+                    },
+                    {
+                        title: "Execute cleanup",
+                        code: `cleanmgr /sagerun:1`,
+                        description: "Run configured cleanup"
+                    },
+                    {
+                        title: "Clear Windows Update cache",
+                        code: `Stop-Service wuauserv\nRemove-Item C:\\Windows\\SoftwareDistribution\\* -Recurse -Force -ErrorAction SilentlyContinue\nStart-Service wuauserv`,
+                        description: "⚠️ WARNING: Deletes update cache - may need to re-download updates"
+                    },
+                    {
+                        title: "Clear font cache",
+                        code: `Stop-Service FontCache\nRemove-Item $env:windir\\ServiceProfiles\\LocalService\\AppData\\Local\\FontCache\\* -Recurse -Force -ErrorAction SilentlyContinue\nStart-Service FontCache`,
+                        description: "Fix font rendering issues"
+                    },
+                    {
+                        title: "Clear Windows Store cache",
+                        code: `wsreset.exe`,
+                        description: "Reset Microsoft Store"
+                    },
+                    {
+                        title: "Empty Recycle Bin",
+                        code: `Clear-RecycleBin -Force`,
+                        description: "⚠️ WARNING: Permanently deletes all items - unrecoverable"
+                    }
+                ]
+            }
+        ];
+
+        // Calculate total commands
+        const totalCommands = commandData.reduce((acc, cat) => acc + cat.commands.length, 0);
+        const totalCategories = commandData.length;
+
+        // Render commands in grid
+        function renderCommands() {
+            const container = document.getElementById('commandsContainer');
+            container.innerHTML = '';
+
+            commandData.forEach((category, categoryIndex) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.dataset.category = categoryIndex;
+
+                const chevronSvg = `
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                `;
+
+                categoryDiv.innerHTML = `
+                    <div class="category-header">
+                        <div class="category-header-left">
+                            <span class="category-icon">${category.icon}</span>
+                            <h2 class="category-title">${category.category}</h2>
+                            <span class="category-count">${category.commands.length}</span>
+                        </div>
+                        ${chevronSvg}
+                    </div>
+                    <div class="commands-container">
+                        ${category.commands.map((cmd, cmdIndex) => `
+                            <div class="command" data-command="${categoryIndex}-${cmdIndex}">
+                                <div class="command-content">
+                                    <div class="command-header">
+                                        <div class="command-info">
+                                            <h3 class="command-title">${cmd.title}</h3>
+                                            <p class="command-description">${cmd.description}</p>
+                                        </div>
+                                        <button class="copy-button" data-code="${encodeURIComponent(cmd.code)}" data-id="${categoryIndex}-${cmdIndex}">
+                                            <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                            <span class="copy-text">Copy</span>
+                                        </button>
+                                    </div>
+                                    <pre class="command-code"><code>${escapeHtml(cmd.code)}</code></pre>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                container.appendChild(categoryDiv);
+            });
+
+            // Add click handlers
+            document.querySelectorAll('.category-header').forEach(header => {
+                header.addEventListener('click', function () {
+                    const category = this.closest('.category');
+                    category.classList.toggle('expanded');
+                });
+            });
+
+            // Copy button handlers
+            document.querySelectorAll('.copy-button').forEach(button => {
+                button.addEventListener('click', async function (e) {
+                    e.stopPropagation();
+                    const code = decodeURIComponent(this.dataset.code);
+
+                    try {
+                        await navigator.clipboard.writeText(code);
+
+                        const copyText = this.querySelector('.copy-text');
+                        const originalText = copyText.textContent;
+                        copyText.textContent = 'Copied';
+                        this.classList.add('copied');
+
+                        this.querySelector('.copy-icon').innerHTML = `
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        `;
+
+                        setTimeout(() => {
+                            copyText.textContent = originalText;
+                            this.classList.remove('copied');
+                            this.querySelector('.copy-icon').innerHTML = `
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            `;
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Failed to copy:', err);
+                    }
+                });
+            });
+        }
+
+        // Search functionality
+        function handleSearch(query) {
+            const searchTerm = query.toLowerCase().trim();
+            let visibleCount = 0;
+
+            if (!searchTerm) {
+                document.querySelectorAll('.category').forEach(cat => {
+                    cat.classList.remove('hidden');
+                    cat.querySelectorAll('.command').forEach(cmd => cmd.classList.remove('hidden'));
+                });
+                document.getElementById('noResults').classList.add('hidden');
+                return;
+            }
+
+            commandData.forEach((category, catIndex) => {
+                const categoryElement = document.querySelector(`[data-category="${catIndex}"]`);
+                let categoryHasVisible = false;
+
+                category.commands.forEach((cmd, cmdIndex) => {
+                    const commandElement = document.querySelector(`[data-command="${catIndex}-${cmdIndex}"]`);
+                    const matches =
+                        cmd.title.toLowerCase().includes(searchTerm) ||
+                        cmd.code.toLowerCase().includes(searchTerm) ||
+                        cmd.description.toLowerCase().includes(searchTerm);
+
+                    if (matches) {
+                        commandElement.classList.remove('hidden');
+                        categoryHasVisible = true;
+                        visibleCount++;
+                    } else {
+                        commandElement.classList.add('hidden');
+                    }
+                });
+
+                if (categoryHasVisible) {
+                    categoryElement.classList.remove('hidden');
+                    categoryElement.classList.add('expanded');
+                } else {
+                    categoryElement.classList.add('hidden');
+                }
+            });
+
+            if (visibleCount === 0) {
+                document.getElementById('noResults').classList.remove('hidden');
+            } else {
+                document.getElementById('noResults').classList.add('hidden');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        renderCommands();
+        document.getElementById('footerStats').textContent =
+            `PowerShell Command Library • ${totalCommands} Commands Across ${totalCategories} Categories`;
+
+        document.getElementById('searchInput').addEventListener('input', function (e) {
+            handleSearch(e.target.value);
+        });
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const themeText = document.getElementById('themeText');
+        const themeIcon = themeToggle.querySelector('.theme-icon');
+
+        // Check for saved theme preference or default to dark
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-mode');
+            themeText.textContent = 'Dark';
+            themeIcon.innerHTML = `
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            `;
+        }
+
+        themeToggle.addEventListener('click', function () {
+            document.body.classList.toggle('light-mode');
+
+            if (document.body.classList.contains('light-mode')) {
+                themeText.textContent = 'Dark';
+                themeIcon.innerHTML = `
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                `;
+                localStorage.setItem('theme', 'light');
+            } else {
+                themeText.textContent = 'Light';
+                themeIcon.innerHTML = `
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                `;
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+    </script>
+</body>
+
+</html>
