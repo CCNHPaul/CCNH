@@ -764,6 +764,7 @@
                     </div>
                 </div>
                 <div class="header-right">
+                    <!-- Add Command Button - Commented out until backend is decided
                     <button id="addCommandButton" class="add-command-button">
                         <svg class="gear-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -772,6 +773,7 @@
                         </svg>
                         <span>Add Command</span>
                     </button>
+                    -->
                     <button id="themeToggle" class="theme-toggle">
                         <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -2227,10 +2229,13 @@
         const cancelButton = document.getElementById('cancelButton');
         const addCommandForm = document.getElementById('addCommandForm');
 
-        addCommandButton.addEventListener('click', function() {
-            modal.classList.add('active');
-            populateCategoryDropdown();
-        });
+        // Only attach event listener if button exists
+        if (addCommandButton) {
+            addCommandButton.addEventListener('click', function() {
+                modal.classList.add('active');
+                populateCategoryDropdown();
+            });
+        }
 
         closeModal.addEventListener('click', function() {
             modal.classList.remove('active');
